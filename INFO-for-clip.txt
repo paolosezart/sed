@@ -1,0 +1,187 @@
+﻿┌──(kali㉿kalipi)-[~]
+└─$ uname -a
+Linux kalipi 5.15.44-Re4son-v8l+ #1 SMP PREEMPT Debian kali-pi (2022-07-03) aarch64 GNU/Linux
+
+┌──(kali㉿kalipi)-[~]
+└─$ lsb_release -a
+No LSB modules are available.
+Distributor ID: Kali
+Description:    Kali GNU/Linux Rolling
+Release:        2024.2
+Codename:       kali-rolling
+
+┌──(kali㉿kalipi)-[~]
+└─$ cat /etc/os-release
+PRETTY_NAME="Kali GNU/Linux Rolling"
+NAME="Kali GNU/Linux"
+VERSION_ID="2024.2"
+VERSION="2024.2"
+VERSION_CODENAME=kali-rolling
+ID=kali
+ID_LIKE=debian
+HOME_URL="https://www.kali.org/"
+SUPPORT_URL="https://forums.kali.org/"
+BUG_REPORT_URL="https://bugs.kali.org/"
+ANSI_COLOR="1;31"
+
+┌──(kali㉿kalipi)-[~]
+└─$ dpkg --print-architecture
+arm64
+
+┌──(kali㉿kalipi)-[~]
+└─$ lscpu
+Architecture:            aarch64
+  CPU op-mode(s):        32-bit, 64-bit
+  Byte Order:            Little Endian
+CPU(s):                  4
+  On-line CPU(s) list:   0-3
+Vendor ID:               ARM
+  Model name:            Cortex-A72
+    Model:               3
+    Thread(s) per core:  1
+    Core(s) per cluster: 4
+    Socket(s):           -
+    Cluster(s):          1
+    Stepping:            r0p3
+    CPU(s) scaling MHz:  100%
+    CPU max MHz:         1900,0000
+    CPU min MHz:         600,0000
+    BogoMIPS:            108,00
+    Flags:               fp asimd evtstrm crc32 cpuid
+Caches (sum of all):
+  L1d:                   128 KiB (4 instances)
+  L1i:                   192 KiB (4 instances)
+  L2:                    1 MiB (1 instance)
+Vulnerabilities:
+  Itlb multihit:         Not affected
+  L1tf:                  Not affected
+  Mds:                   Not affected
+  Meltdown:              Not affected
+  Spec store bypass:     Vulnerable
+  Spectre v1:            Mitigation; __user pointer sanitization
+  Spectre v2:            Vulnerable
+  Srbds:                 Not affected
+  Tsx async abort:       Not affected
+
+┌──(kali㉿kalipi)-[~]
+└─$ go version
+Команда «go» не найдена, но может быть установлена с помощью:
+sudo apt install gccgo-go
+sudo apt install golang-go
+
+┌──(kali㉿kalipi)-[~]
+└─$ which go
+
+┌──(kali㉿kalipi)-[~]
+└─$ gcc --version
+gcc (Debian 14.2.0-17) 14.2.0
+Copyright (C) 2024 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+
+┌──(kali㉿kalipi)-[~]
+└─$ ld --version
+GNU ld (GNU Binutils for Debian) 2.42.50.20240618
+Copyright (C) 2024 Free Software Foundation, Inc.
+Эта программа является свободным программным обеспечением. Вы можете распространять
+её на условиях GNU General Public License версии 3 или (по вашему выбору)
+более поздней версии.
+Эта программа не имеет абсолютно никаких не гарантий.
+
+┌──(kali㉿kalipi)-[~]
+└─$ make --version
+GNU Make 4.3
+Эта программа собрана для aarch64-unknown-linux-gnu
+Copyright (C) 1988-2020 Free Software Foundation, Inc.
+Лицензия GPLv3+: GNU GPL версии 3 или новее <http://gnu.org/licenses/gpl.html>
+Это свободное программное обеспечение: вы можете свободно изменять его и
+распространять. НЕТ НИКАКИХ ГАРАНТИЙ вне пределов, допустимых законом.
+
+┌──(kali㉿kalipi)-[~]
+└─$ dpkg -l | grep xclip
+
+┌──(kali㉿kalipi)-[~]
+└─$ dpkg -l | grep wl-clipboard
+
+┌──(kali㉿kalipi)-[~]
+└─$ dpkg -l | grep gtk
+ii  doublecmd-gtk                                       1.1.22-1                                 arm64        twin-panel (commander-style) file manager (GTK2)
+ii  gir1.2-gtk-3.0:arm64                                3.24.41-4                                arm64        GTK graphical user interface library -- gir bindings
+ii  gir1.2-gtk-4.0:arm64                                4.17.4+ds-4                              arm64        GTK graphical user interface library -- gir bindings
+ii  gir1.2-gtksource-300:arm64                          299.5.0-1                                arm64        gir files for the GTK+ syntax highlighting widget
+ii  gir1.2-javascriptcoregtk-6.0:arm64                  2.44.2-1                                 arm64        JavaScript engine library from WebKitGTK - GObject introspection data
+ii  gir1.2-nma4-1.0:arm64                               1.10.6-3                                 arm64        GObject introspection data for libnma-gtk4
+ii  gtk-update-icon-cache                               4.17.4+ds-4                              arm64        icon theme caching utility
+ii  gtk2-engines-pixbuf:arm64                           2.24.33-4                                arm64        pixbuf-based theme for GTK 2
+ii  gtkhash                                             1.5-1                                    arm64        GTK+ utility for computing checksums and more
+ii  ibus-gtk:arm64                                      1.5.29-2                                 arm64        Intelligent Input Bus - GTK2 support
+ii  ibus-gtk3:arm64                                     1.5.29-2                                 arm64        Intelligent Input Bus - GTK3 support
+ii  ibus-gtk4:arm64                                     1.5.29-2                                 arm64        Intelligent Input Bus - GTK4 support
+rc  kde-config-gtk-style:arm64                          4:5.27.11-1                              arm64        KDE configuration module for GTK+ 2.x and GTK+ 3.x styles selection
+ii  libavahi-ui-gtk3-0:arm64                            0.8-17                                   arm64        Avahi GTK+ User interface library for GTK3
+ii  libavahi-ui-gtk3-dev:arm64                          0.8-17                                   arm64        Development headers for the Avahi GTK+ User interface library
+ii  libcanberra-gtk-module:arm64                        0.30-10                                  arm64        translates GTK+ widgets signals to event sounds
+ii  libcanberra-gtk0:arm64                              0.30-10                                  arm64        GTK+ helper for playing widget event sounds with libcanberra
+ii  libcanberra-gtk3-0:arm64                            0.30-17                                  arm64        GTK+ 3.0 helper for playing widget event sounds with libcanberra
+ii  libcanberra-gtk3-module:arm64                       0.30-17                                  arm64        translates GTK3 widgets signals to event sounds
+ii  libcolord-gtk4-1t64:arm64                           0.3.1-1                                  arm64        GTK4 convenience library for interacting with colord
+ii  libdbusmenu-gtk3-4:arm64                            18.10.20180917~bzr492+repack1-4          arm64        library for passing menus over DBus - GTK-3+ version
+ii  libdecor-0-plugin-1-gtk:arm64                       0.2.2-1+b1                               arm64        libdecor decoration plugin using GTK
+ii  libgarcon-gtk3-1-0:arm64                            4.18.1-1+b1                              arm64        menu library for Xfce (GTK3 library)
+ii  libgedit-gtksourceview-300-3:arm64                  299.5.0-1                                arm64        shared libraries for the GTK+ syntax highlighting widget
+ii  libgedit-gtksourceview-300-common                   299.5.0-1                                all          common files for the GTK+ syntax highlighting widget
+rc  libgtk-3-0:arm64                                    3.24.41-1                                arm64        GTK graphical user interface library
+ii  libgtk-3-0t64:arm64                                 3.24.41-4                                arm64        GTK graphical user interface library
+ii  libgtk-3-bin                                        3.24.41-4                                arm64        programs for the GTK graphical user interface library
+ii  libgtk-3-common                                     3.24.41-4                                all          common files for the GTK graphical user interface library
+ii  libgtk-3-dev:arm64                                  3.24.41-4                                arm64        development files for the GTK library
+ii  libgtk-4-1:arm64                                    4.17.4+ds-4                              arm64        GTK graphical user interface library
+ii  libgtk-4-bin                                        4.17.4+ds-4                              arm64        programs for the GTK graphical user interface library
+ii  libgtk-4-common                                     4.17.4+ds-4                              all          common files for the GTK graphical user interface library
+ii  libgtk-4-media-gstreamer                            4.17.4+ds-4                              arm64        GStreamer media backend for the GTK graphical user interface library
+ii  libgtk-layer-shell0                                 0.8.2-1                                  arm64        Wayland Layer Shell protocol desktop component library
+ii  libgtk-vnc-2.0-0:arm64                              1.5.0-1                                  arm64        VNC viewer widget for GTK+3 (runtime libraries)
+rc  libgtk2.0-0:arm64                                   2.24.33-3                                arm64        GTK graphical user interface library - old version
+ii  libgtk2.0-0t64:arm64                                2.24.33-4                                arm64        GTK graphical user interface library - old version
+ii  libgtk2.0-bin                                       2.24.33-4                                arm64        programs for the GTK graphical user interface library
+ii  libgtk2.0-common                                    2.24.33-4                                all          common files for the GTK graphical user interface library
+ii  libgtk3-perl                                        0.038-3                                  all          Perl bindings for the GTK+ graphical user interface library
+ii  libgtk3-simplelist-perl                             0.21-1                                   all          Perl simple interface to GTK+ 3's complex MVC list widget
+ii  libgtkmm-2.4-1t64:arm64                             1:2.24.5-6                               arm64        C++ wrappers for GTK+ 2 (shared libraries)
+ii  libgtkmm-3.0-1v5:arm64                              3.24.8-2+b1                              arm64        C++ wrappers for GTK+ (shared libraries)
+ii  libgtksourceview-3.0-1:arm64                        3.24.11-2+b1                             arm64        shared libraries for the GTK+ syntax highlighting widget
+ii  libgtksourceview-3.0-common                         3.24.11-2                                all          common files for the GTK+ syntax highlighting widget
+ii  libgtksourceview-4-0:arm64                          4.8.4-5+b2                               arm64        shared libraries for the GTK+ syntax highlighting widget
+ii  libgtksourceview-4-common                           4.8.4-5                                  all          common files for the GTK+ syntax highlighting widget
+ii  libgtksourceviewmm-3.0-0v5:arm64                    3.18.0-4+b1                              arm64        C++ binding of GtkSourceView
+ii  libjavascriptcoregtk-4.1-0:arm64                    2.44.2-1                                 arm64        JavaScript engine library from WebKitGTK
+ii  libjavascriptcoregtk-6.0-1:arm64                    2.44.2-1                                 arm64        JavaScript engine library from WebKitGTK
+ii  libnma-gtk4-0:arm64                                 1.10.6-3                                 arm64        NetworkManager GUI GTK4 library
+ii  libwebkit2gtk-4.1-0:arm64                           2.44.2-1                                 arm64        Web content engine library for GTK
+ii  libwebkitgtk-6.0-4:arm64                            2.44.2-1                                 arm64        Web content engine library for GTK
+ii  libwxgtk3.2-1t64:arm64                              3.2.6+dfsg-2                             arm64        wxWidgets Cross-platform C++ GUI toolkit (GTK 3 runtime)
+ii  lightdm-gtk-greeter                                 2.0.8-3                                  arm64        simple display manager (GTK+ greeter)
+ii  lightdm-gtk-greeter-settings                        1.2.3-1                                  all          settings editor for the LightDM GTK+ Greeter
+ii  qt5-gtk-platformtheme:arm64                         5.15.15+dfsg-2                           arm64        Qt 5 GTK+ 3 platform theme
+ii  qt5-gtk2-platformtheme:arm64                        5.0.0+git23.g335dbec-6+b4                arm64        Qt 5 extra widget styles - GTK+ 2 Platform theme
+ii  qt6-gtk-platformtheme:arm64                         6.8.2+dfsg-5+b1                          arm64        Qt 6 GTK+ 3 platform theme
+ii  thunar-gtkhash                                      1.5-1                                    arm64        thunar extension for computing checksums and more using gtkhash
+ii  xdg-desktop-portal-gtk                              1.15.1-1                                 arm64        GTK+/GNOME portal backend for xdg-desktop-portal
+ii  xdg-user-dirs-gtk                                   0.11-1                                   arm64        tool to manage well known user directories (Gtk extension)
+
+┌──(kali㉿kalipi)-[~]
+└─$ pkg-config --version
+1.8.1
+
+┌──(kali㉿kalipi)-[~]
+└─$ pkg-config --list-all | grep gtk
+gtk+-3.0                       GTK+ - GTK+ Graphical UI Library
+gtk+-broadway-3.0              GTK+ - GTK+ Graphical UI Library
+gtk+-wayland-3.0               GTK+ - GTK+ Graphical UI Library
+gtk+-x11-3.0                   GTK+ - GTK+ Graphical UI Library
+avahi-ui-gtk3                  avahi-ui - Avahi Multicast DNS Responder (Common GTK3 UI support)
+gtk+-unix-print-3.0            GTK+ - GTK+ Unix print support
+
+┌──(kali㉿kalipi)-[~]
+└─$ ss -tlnp | grep 5678
