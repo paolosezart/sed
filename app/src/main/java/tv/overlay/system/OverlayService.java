@@ -27,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class OverlayService extends Service {
     static final String ACTION_SHOW = "tv.overlay.SHOW";
@@ -36,6 +37,7 @@ public class OverlayService extends Service {
     private static final String CHANNEL_ID = "overlay";
     private static final int NOTIFICATION_ID = 1;
     private static final long UPDATE_INTERVAL_MS = 3000L;
+    private static final long ROOT_TIMEOUT_SECONDS = 4L;
 
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -196,8 +198,13 @@ public class OverlayService extends Service {
             outputStream.close();
             file.setReadable(true, false);
             Process process = new ProcessBuilder("su", "0", "sh", file.getAbsolutePath()).redirectErrorStream(true).start();
+            if (!process.waitFor(ROOT_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+                process.destroyForcibly();
+                process.waitFor(1L, TimeUnit.SECONDS);
+                return new RootResult(false, readAll(process.getInputStream()) + "root command timed out");
+            }
             String output = readAll(process.getInputStream());
-            int exitCode = process.waitFor();
+            int exitCode = process.exitValue();
             return new RootResult(exitCode == 0, output);
         } catch (Exception e) {
             return new RootResult(false, e.getClass().getSimpleName() + ": " + e.getMessage());
