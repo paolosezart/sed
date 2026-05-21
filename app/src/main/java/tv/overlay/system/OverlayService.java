@@ -180,13 +180,13 @@ public class OverlayService extends Service {
     }
 
     private SystemSnapshot collectSnapshot() {
-        RootResult root = runRootScript("/system/bin/free -h 2>/dev/null || free -h 2>/dev/null\ncat /proc/meminfo 2>/dev/null\ncat /proc/stat 2>/dev/null\ngetprop ro.product.cpu.abi 2>/dev/null\ngetprop ro.product.cpu.abilist 2>/dev/null\n");
+        RootResult root = runRootScript("/system/bin/free -h 2>/dev/null || free -h 2>/dev/null\ncat /proc/meminfo 2>/dev/null\ncat /proc/stat 2>/dev/null\ncat /proc/swaps 2>/dev/null\nifconfig wlan0 2>/dev/null || ifconfig 2>/dev/null\ndumpsys wifi 2>/dev/null | grep 'mWifiInfo'\ncmd wifi status 2>/dev/null | grep -E 'WifiInfo|SSID'\n");
         String output = root.output;
         CpuSample cpuSample = parseCpu(output);
         float cpuLoad = computeCpuLoad(cpuSample);
         MemoryInfo memoryInfo = parseMemory(output);
-        String abi = firstNonEmpty(findLastPropertyLine(output), firstAbi());
-        return new SystemSnapshot(Build.VERSION.RELEASE, Build.VERSION.SDK_INT, systemBits(), friendlyArch(abi), cpuLoad, memoryInfo, root.ok);
+        NetworkInfo networkInfo = parseNetwork(output);
+        return new SystemSnapshot(cpuLoad, memoryInfo, networkInfo);
     }
 
     private RootResult runRootScript(String script) {
@@ -266,10 +266,20 @@ public class OverlayService extends Service {
 
     private MemoryInfo parseMemory(String output) {
         MemoryInfo info = parseFree(output);
-        if (info.hasRam()) {
-            return info;
+        MemoryInfo memInfo = parseMemInfo(output);
+        if (!info.hasRam()) {
+            info = memInfo;
         }
-        return parseMemInfo(output);
+        if ("unknown".equals(info.ramAvailable)) {
+            info.ramAvailable = memInfo.ramAvailable;
+        }
+        if ("unknown".equals(info.swapTotal)) {
+            info.swapTotal = memInfo.swapTotal;
+            info.swapUsed = memInfo.swapUsed;
+            info.swapFree = memInfo.swapFree;
+        }
+        parseSwaps(output, info);
+        return info;
     }
 
     private MemoryInfo parseFree(String output) {
@@ -297,6 +307,130 @@ public class OverlayService extends Service {
             }
         }
         return info;
+    }
+
+    private void parseSwaps(String output, MemoryInfo info) {
+        long fileTotal = 0L;
+        long fileUsed = 0L;
+        String[] lines = output.split("\\n");
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (trimmed.length() == 0 || trimmed.startsWith("Filename")) {
+                continue;
+            }
+            String[] parts = trimmed.split("\\s+");
+            if (parts.length >= 4 && "file".equals(parts[1])) {
+                fileTotal += parseLong(parts, 2);
+                fileUsed += parseLong(parts, 3);
+            }
+        }
+        if (fileTotal > 0L) {
+            info.swapFileTotal = humanKb(fileTotal);
+            info.swapFileUsed = humanKb(fileUsed);
+            info.swapFileFree = humanKb(Math.max(0L, fileTotal - fileUsed));
+        }
+    }
+
+    private NetworkInfo parseNetwork(String output) {
+        NetworkInfo info = new NetworkInfo();
+        parseWlanIp(output, info);
+        parseWifiInfo(output, info);
+        return info;
+    }
+
+    private void parseWlanIp(String output, NetworkInfo info) {
+        boolean inWlan = false;
+        String[] lines = output.split("\\n");
+        for (String line : lines) {
+            if (line.startsWith("wlan0:")) {
+                inWlan = true;
+            } else if (inWlan && line.length() > 0 && !Character.isWhitespace(line.charAt(0))) {
+                inWlan = false;
+            }
+            if (inWlan) {
+                String trimmed = line.trim();
+                if (trimmed.startsWith("inet ")) {
+                    String[] parts = trimmed.split("\\s+");
+                    if (parts.length >= 2) {
+                        info.ip = parts[1];
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    private void parseWifiInfo(String output, NetworkInfo info) {
+        String[] lines = output.split("\\n");
+        for (String line : lines) {
+            String ssid = valueAfter(line, "SSID:");
+            if (!"unknown".equals(ssid) && !line.contains("NetworkCapabilities")) {
+                info.ssid = cleanSsid(ssid);
+            }
+            String linkSpeed = valueAfter(line, "Link speed:");
+            if (!"unknown".equals(linkSpeed)) {
+                info.linkSpeed = linkSpeed;
+            }
+            String frequency = valueAfter(line, "Frequency:");
+            if (!"unknown".equals(frequency)) {
+                info.frequency = frequency;
+                info.channel = wifiChannel(frequency);
+            }
+        }
+        if ("unknown".equals(info.ssid)) {
+            for (String line : lines) {
+                int index = line.indexOf("SSID: \"");
+                if (index >= 0) {
+                    int start = index + 7;
+                    int end = line.indexOf('"', start);
+                    if (end > start) {
+                        info.ssid = line.substring(start, end);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private String valueAfter(String line, String key) {
+        int index = line.indexOf(key);
+        if (index < 0) {
+            return "unknown";
+        }
+        int start = index + key.length();
+        int end = line.indexOf(',', start);
+        if (end < 0) {
+            end = line.length();
+        }
+        return line.substring(start, end).trim();
+    }
+
+    private String cleanSsid(String ssid) {
+        String value = ssid.trim();
+        if (value.startsWith("\"") && value.endsWith("\"") && value.length() >= 2) {
+            value = value.substring(1, value.length() - 1);
+        }
+        if (value.length() == 0 || "<unknown ssid>".equalsIgnoreCase(value)) {
+            return "unknown";
+        }
+        return value;
+    }
+
+    private String wifiChannel(String frequency) {
+        String digits = frequency.replaceAll("[^0-9]", "");
+        if (digits.length() == 0) {
+            return "unknown";
+        }
+        try {
+            int mhz = Integer.parseInt(digits);
+            if (mhz == 2484) return "14";
+            if (mhz >= 2412 && mhz <= 2472) return String.valueOf((mhz - 2407) / 5);
+            if (mhz >= 5000 && mhz <= 5895) return String.valueOf((mhz - 5000) / 5);
+            if (mhz >= 5955 && mhz <= 7115) return String.valueOf((mhz - 5950) / 5);
+        } catch (NumberFormatException ignored) {
+            return "unknown";
+        }
+        return "unknown";
     }
 
     private MemoryInfo parseMemInfo(String output) {
@@ -450,40 +584,44 @@ public class OverlayService extends Service {
         String swapTotal = "unknown";
         String swapUsed = "unknown";
         String swapFree = "unknown";
+        String swapFileTotal = "unknown";
+        String swapFileUsed = "unknown";
+        String swapFileFree = "unknown";
 
         boolean hasRam() {
             return !"unknown".equals(ramTotal);
         }
     }
 
+    private static final class NetworkInfo {
+        String ip = "unknown";
+        String ssid = "unknown";
+        String linkSpeed = "unknown";
+        String frequency = "unknown";
+        String channel = "unknown";
+    }
+
     private static final class SystemSnapshot {
-        final String androidVersion;
-        final int apiLevel;
-        final String bits;
-        final String arch;
         final float cpuLoad;
         final MemoryInfo memory;
-        final boolean rootOk;
+        final NetworkInfo network;
 
-        SystemSnapshot(String androidVersion, int apiLevel, String bits, String arch, float cpuLoad, MemoryInfo memory, boolean rootOk) {
-            this.androidVersion = androidVersion;
-            this.apiLevel = apiLevel;
-            this.bits = bits;
-            this.arch = arch;
+        SystemSnapshot(float cpuLoad, MemoryInfo memory, NetworkInfo network) {
             this.cpuLoad = cpuLoad;
             this.memory = memory;
-            this.rootOk = rootOk;
+            this.network = network;
         }
 
         String format() {
             String cpu = cpuLoad >= 0f ? String.format(Locale.US, "%.1f%%", cpuLoad) : "unknown";
-            return "Android: " + androidVersion + " / API " + apiLevel + "\n"
-                    + "System: " + bits + ", " + arch + "\n"
-                    + "CPU: " + cpu + "\n"
+            return "CPU: " + cpu + "\n"
                     + "RAM: used " + memory.ramUsed + " / free " + memory.ramFree + " / total " + memory.ramTotal + "\n"
                     + "RAM avail: " + memory.ramAvailable + "\n"
                     + "SWAP: used " + memory.swapUsed + " / free " + memory.swapFree + " / total " + memory.swapTotal + "\n"
-                    + "Root su 0 sh: " + (rootOk ? "OK" : "FAIL");
+                    + "SWAP file: used " + memory.swapFileUsed + " / free " + memory.swapFileFree + " / total " + memory.swapFileTotal + "\n"
+                    + "wlan0 IP: " + network.ip + "\n"
+                    + "Wi-Fi SSID: " + network.ssid + "\n"
+                    + "Wi-Fi link: " + network.linkSpeed + " / ch " + network.channel + " / " + network.frequency;
         }
     }
 }
